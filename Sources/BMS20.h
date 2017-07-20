@@ -162,19 +162,20 @@ typedef enum _TASK_LIST
     //TASK_RECORD,
     //TASK_DC_RECHARGE,
     //GetTavgProcess()
+    TASK_T_CTRL_PROCESS,
     TASKS_MAX      // 总的可供分配的定时任务数目                                     
 } TASK_LIST;
 ////////
 enum slaveNumber
 {
-S0,
-S1,
-S2,
-S3,
-S4,
-S5,
-S6,
-S7
+    S0,
+    S1,
+    S2,
+    S3,
+    S4,
+    S5,
+    S6,
+    S7
 };
 //*******************************************
 //*******************************************
