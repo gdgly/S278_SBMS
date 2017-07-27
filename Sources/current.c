@@ -72,9 +72,23 @@ void CurrentCalculation(float *current1, float *current2)
             *current1 = 0;
         }
         
+        if(*current1 >= 400.0){
+            *current1 = 400.0;
+        }
+        else if(*current1 <= -400.0){
+            *current1 = -400.0;
+        }
+        
         *current2 = sx;
         if((*current2 >= -1) && (*current2 <= 1)){
             *current2 = 0;
+        }
+        
+        if(*current2 >= 400.0){
+            *current2 = 400.0;
+        }
+        else if(*current2 <= -400.0){
+            *current2 = -400.0;
         }
         
         /*

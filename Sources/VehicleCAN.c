@@ -147,9 +147,10 @@ void BMS_To_VCU_BasicMsg1(void)
     mg.data[0] = FireWarning; // bit0-1火灾预警
     mg.data[1] = InsRelayState;// 绝缘控制继电器状态
     
-    buff = (unsigned int)((g_systemCurrent_2+400)*50);
-    mg.data[2]= (unsigned char)((buff >> 8) & 0x00ff);  //电池组当前加热电流高字节 
-    mg.data[3]= (unsigned char)((buff >> 0) & 0x00ff);  //电池组当前加热电流低字节 
+    buff = (unsigned int)((g_systemCurrent_2+400)*50);	
+    mg.data[2]= buff >> 8;//电池组当前加热电流高字节 
+    mg.data[3]= (unsigned char)buff;//电池组当前加热电流低字节 
+
     mg.data[4] = 0xff;
     mg.data[5] = 0xff;
     mg.data[6] = 0xff;
