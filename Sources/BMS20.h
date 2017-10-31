@@ -163,6 +163,7 @@ typedef enum _TASK_LIST
     //TASK_DC_RECHARGE,
     //GetTavgProcess()
     TASK_T_CTRL_PROCESS,
+    Task_KchgN_CTRL_PROCESS,
     TASKS_MAX      // 总的可供分配的定时任务数目                                     
 } TASK_LIST;
 ////////

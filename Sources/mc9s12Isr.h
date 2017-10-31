@@ -54,8 +54,17 @@ extern unsigned char BCSStep;
 
 
 extern unsigned char FireMessage[10]; //接收10个箱体的信息
-extern unsigned char InsRelayControl; //接收BMS板绝缘控制信息
-extern unsigned char Heat_P_Realy_Status;
+//extern unsigned char InsRelayControl; //接收BMS板绝缘控制信息
+//extern unsigned char Heat_P_Realy_Status;
+
+typedef struct{
+    byte InsRelayControl        :1;
+    byte Heat_P_Realy_Status    :1;
+    byte Kchg_N_ctrl_cmd        :1;
+    byte reserved               :5;
+}BMS_SBMS_CTRL_CMD;
+
+extern BMS_SBMS_CTRL_CMD g_bms_sbms_ctrl_cmd;
 //**************************************************************
 //*************************************************************
 //***************************************************************

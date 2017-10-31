@@ -17,7 +17,5 @@ extern void TaskProcess(void);
 extern void TaskRecordProcess(void);
 extern void TaskCurrentDetect(void);
 extern void TaskSocProcess(void);
-extern void TaskBmuProcess(void);
-//extern void TaskReport2PC(void);
-extern void TaskStatusMachine(void);
 extern void TaskHeatProcess(void);
+extern void TaskKchgNCtrlProcess(void);

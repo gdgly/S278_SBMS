@@ -53,8 +53,9 @@ unsigned char BCSStep = 0;    //BCS中的步骤0:发送BCS的头;1:发送BCP的数据段
 
 
 unsigned char FireMessage[10]=0; //接收10个箱体的信息
-unsigned char InsRelayControl=0; //接收BMS板绝缘控制信息
-unsigned char Heat_P_Realy_Status = 0; // receive the heat paostive relay status from BMS master board, 0 = OFF, 1 = ON
+//unsigned char InsRelayControl=0; //接收BMS板绝缘控制信息
+//unsigned char Heat_P_Realy_Status = 0; // receive the heat paostive relay status from BMS master board, 0 = OFF, 1 = ON
+BMS_SBMS_CTRL_CMD g_bms_sbms_ctrl_cmd;
 //******************************************************************************
 //* Function name:   SendMes
 //* Description:     发送整车CAN报文
@@ -180,8 +181,9 @@ interrupt void CAN0_RECEIVE_ISR(void)   //车载 /外部CAN / 500Hz
     switch(msgCan0RxID) 
     {   
         case 0x000c0125:
-             InsRelayControl = msgData[0];
-             Heat_P_Realy_Status = msgData[1];
+             g_bms_sbms_ctrl_cmd.InsRelayControl = msgData[0];
+             g_bms_sbms_ctrl_cmd.Heat_P_Realy_Status = msgData[1];
+             g_bms_sbms_ctrl_cmd.Kchg_N_ctrl_cmd = msgData[2];
              break;
      
         default:
