@@ -51,11 +51,8 @@ unsigned char BCPStep = 0;    //BCP中的步骤0:发送BCP的头;1:发送BCP的数据段
 unsigned char FlagBCSSend = 0;//发送BCS后,收到充电机返回的消息,开始发送数据段
 unsigned char BCSStep = 0;    //BCS中的步骤0:发送BCS的头;1:发送BCP的数据段
 
-
-unsigned char FireMessage[10]=0; //接收10个箱体的信息
-//unsigned char InsRelayControl=0; //接收BMS板绝缘控制信息
-//unsigned char Heat_P_Realy_Status = 0; // receive the heat paostive relay status from BMS master board, 0 = OFF, 1 = ON
 BMS_SBMS_CTRL_CMD g_bms_sbms_ctrl_cmd;
+FireMsg g_FireMsg[10]; //接收10个箱体的火灾报警装置的信息
 //******************************************************************************
 //* Function name:   SendMes
 //* Description:     发送整车CAN报文
@@ -389,176 +386,73 @@ interrupt void CAN2_RECEIVE_ISR(void)   //内部  BMU   250Hz
                ((unsigned long)CAN2RXIDR2<<7) | 
                ((unsigned long)CAN2RXIDR3>>1);
    
-    for(i=0;i<8;i++)
+    for(i=0;i<8;i++) {
         g_mboxData[0][i]= *((&CAN2RXDSR0)+i);
-  
-    switch(g_mboxID)//
+    }
+    
+    switch(g_mboxID)
     {
-        ///////
-        case 0x18B0F601://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[0]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7   
-            break;
-            
-        case 0x18B0F602://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[1]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7 
-            break;
-            
-        case 0x18B0F603://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[2]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
-            
-        case 0x18B0F604://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[3]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
-            
-        case 0x18B0F605://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[4]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7   
-            break;
-            
-        case 0x18B0F606://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[5]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7 
-            break;
-            
-            
-        case 0x18B0F607://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[6]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
-            
-        case 0x18B0F608://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[7]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
-            
-        case 0x18B0F609://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[8]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
-            
-        case 0x18B0F60a://接收创为灭火器信息 再通过整车CAN发出去
-            FireMessage[9]= (g_mboxData[0][7]&0x00ff)>>4;  //取bit4-7    
-            break;
- 
-      
-        /*case 0xC06D0:
-            ACTem1 = g_mboxData[0][3];
-            ACTem2 = g_mboxData[0][4];
-            if(input5_state()==0) 
-            {    
-                CC2VOL = g_mboxData[0][7];
-                CC2VOL = (CC2VOL << 8);       
-                CC2VOL = (CC2VOL+g_mboxData[0][6]);
-                DC_CC2Count=1;
+        case 0x18FF5A51://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[0].data[i] = g_mboxData[0][i];
             }
             break;
-            */
-       /* case 0x18ff01ab:
-            V2B = g_mboxData[0][1];
-            g_highVoltageV2B = V2B*0.02;
-            V3B = g_mboxData[2][3];
-            g_highVoltageV3B = V3B*0.02;
-            HeatCurrent = g_mboxData[4][5];
-            g_HeatCurrent = (HeatCurrent*0.02+400); 
-            break;
-        */
-        /*case 0xC01EE3F:
-            if((g_mboxData[0][0]==0x55)&&(g_mboxData[0][1]==0xAA))
-            {
-                TestState=1;//测试标志位置1,进入测试状态机177
-                g_BmsModeFlag = TESTSTATE;//调试模式
+            
+        case 0x18FF5A52://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[1].data[i] = g_mboxData[0][i];
             }
-            //InTestToPC();
-            break;
-        case 0xC01EE27: //上下电调试
-            if(g_mboxData[0][2]==0x55)//正极继电器闭合
-            {
-                //闭合总正    
-        	      TurnOn_INZK();//吸合正极接触器
-        	 //     state_group1.Bit.St_P_Relay=1;//to vcu
-        	      
-            }              
-            if(g_mboxData[0][2]==0xaa)  
-            { 
-                TurnOff_INZK();//断开正极接触器
-          //      state_group1.Bit.St_P_Relay=1;//to vcu  
-                                          
-            }
-            bmsToPcInfo552(); //发送继电器状态，完成，BMS保持当前状态  
-            break;
-
-        case 0xC01EE3a: //预充
-            if(g_mboxData[0][2]==0X55) 
-            {
-                   
-        	      TurnOn_INBK();//吸合预充接触器
-        	       
-        	      
-            }
-            if(g_mboxData[0][2]==0xAA)  
-            { 
-                TurnOff_INBK();//断开预充接触器
-                
-            }        
-            break;
-        case 0xC01EE3b://加热
-            if(g_mboxData[0][2]==0x55) 
-            {   
-        	      TurnOn_INHK();//吸合加热接触器        	      
-        	      
-            }
-            if(g_mboxData[0][2]==0xAA)  
-            { 
-                TurnOff_INHK();//断开加热接触器
-                
-            } 
-            break;
-        case 0xC01EE3d: //充电
-            if(g_mboxData[0][2]==0x55) 
-            {   
-        	      TurnOn_INA2K();//吸合充电接触器
-        	      
-        	      
-            }
-            if(g_mboxData[0][2]==0xAA)  
-            { 
-                TurnOff_INA2K();//断开充电接触器
-                
-            } 
-            break;        
-        case 0xC01EE3e: //负极继电器控制0xC01EE3a         
-            if(g_mboxData[0][2]==0x55) 
-            {
-                //闭合总负    
-        	      TurnOn_INFK();//吸合负极接触器
-        	 //     state_group1.Bit.St_N_Relay=1;//to vcu 
-        	      
-            }
-            if(g_mboxData[0][2]==0xaa)  
-            { 
-                TurnOff_INFK();//断开负极接触器
-         //       state_group1.Bit.St_N_Relay=0;//to vcu
-                
-            }
-            break;
-        
-        case 0xC0777: //清除充放电容量
-            DBuffer[0]=0;
-            DBuffer1[0]=0;
-            DisableInterrupts;
-            Write24c64_Byte(AH_CHARGE_ADDR,(unsigned char* )DBuffer,4);
-            Write24c64_Byte(AH_DISCHARGE_ADDR,(unsigned char* )DBuffer,4);
-            Write24c64_Byte(ChangerTime_ADDR,(unsigned char* )DBuffer1,2);
-            DisableInterrupts;
-            break;
-       case 0xC0888:
-       
-            ReadChargeDischargeAH();//读取数据
-            //StoreChargeTime();
-            ReadAHRecord();//发送数据0xC0AAA
-                       
             break;
             
-        case 0xC0999:
-            //StoreChargeTime();
+        case 0x18FF5A53://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[2].data[i] = g_mboxData[0][i];
+            }
             break;
-            */
+            
+        case 0x18FF5A54://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[3].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+        case 0x18FF5A55://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[4].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+        case 0x18FF5A56://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[5].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+            
+        case 0x18FF5A57://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[6].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+        case 0x18FF5A58://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[7].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+        case 0x18FF5A59://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[8].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
+        case 0x18FF5A5a://接收上海联界灭火器信息 再通过整车CAN发出去
+            for(i=0;i<8;i++){
+                g_FireMsg[9].data[i] = g_mboxData[0][i];
+            }
+            break;
+            
         case 0x18FF0A00:         
             BMNVPNflag.Bit.flag0=1;
             if(g_mboxData[0][0]==25) 

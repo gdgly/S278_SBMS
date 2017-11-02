@@ -22,18 +22,11 @@
 //任务列表
 static TASK_COMPONENTS TaskComps[] = 
 { 
-    {0, 1,    1,    TaskCurrentDetect},         //电流检测任务 1ms检测一次电流值 //0 标志位，1，
-    //{0, 700,  700,  TaskSocProcess},            //SOC处理
-    //{0, 297,   300,   TaskBmuProcess},            // BMU数据处理任务//以前60ms
-    {0, 17,   20,   TaskVoltage},               // 总电压计算   .
-    {0, 297,  300,  TaskInsulation},            // 绝缘电阻计算 //该处时间最小600MS，不能太小  80ms
-    //{0, 97,  100,   TaskReport2PC},             //发送报文到上位机
-    //{0, 5,    5,    TaskStatusMachine},         //状态机处理
-    //{0, 997, 1000,  TaskFaultProcess},          //100ms故障处理
-    //{0, 8,    8,    TaskRechargeDC},            //直流充电
-    //{0, 9,   10,    TaskRecordProcess},        //历史记录处理
-    {0, 9,  10, TaskHeatProcess},                 //heat negative relay control process, command received from BMS master board.
-    {0, 10, 10, TaskKchgNCtrlProcess},
+    {0, 1,      1,      TaskCurrentDetect},     //电流检测任务 1ms检测一次电流值 //0 标志位，1，
+    {0, 17,     20,     TaskVoltage},           // 总电压计算   .
+    {0, 297,    300,    TaskInsulation},        // 绝缘电阻计算 //该处时间最小600MS，不能太小  80ms
+    {0, 9,      10,     TaskHeatProcess},       //heat negative relay control process, command received from BMS master board.
+    {0, 10,     10,     TaskKchgNCtrlProcess},
 };
 
 //**************************************************************************************
@@ -98,22 +91,33 @@ void TaskCurrentDetect(void)//
         CurrentCalculation(&g_systemCurrent, &g_systemCurrent_2);
         //g_systemCurrent = CurrentCalculation();
     }
-
-    max = FireMessage[0];
-    for(i=0;i<10;i++) 
-    {
-        if(FireMessage[i]>=max){
-            max=FireMessage[i];
+    
+    for(i=0; i<10; i++){
+        if(g_FireMsg[i].bits.work_status == 4){
+            if(g_FireMsg[i].bits.smoke_warning == 1){
+                max = 1;
+                break;
+            }
         }
     }
-    
-    if((max==2)||(max==3))//2,3级故障定为2
-    {
-        max=2;
+
+    for(i=0; i<10; i++){
+        if(g_FireMsg[i].bits.work_status == 4){
+            if(g_FireMsg[i].bits.OT_warning == 1
+            || g_FireMsg[i].bits.T_jump_warning == 1){
+                max = 2;
+                break;
+            }
+        }
     }
-    else if(max==4)//4级故障定为2
-    {
-        max=3;
+
+    for(i=0; i<10; i++){
+        if(g_FireMsg[i].bits.work_status == 4){
+            if(g_FireMsg[i].bits.fire_warning == 1){
+                max = 3;
+                break;
+            }
+        }
     }
     FireWarning = max;
     
@@ -132,76 +136,6 @@ void TaskCurrentDetect(void)//
         TurnOnFlag=0;  
     }
 }  
-//************************************************************************
-//* Function name:TaskSocProcess
-//* Description:每秒计算并保存SOC，每分钟保存一次历史记录
-//* EntryParameter : None
-//* ReturnValue    : None
-//************************************************************************
-void TaskSocProcess(void)
-{
-    
-    static float ahCharge1A=0;
-    static float ahDischarge1A=0;
-    static unsigned char DCfinish=0;
-   
-	  unsigned char i=0;
-	  float ft=0;
-	  	  	  
-		I2CReadDate();  //读取系统时间
-			         	
-		if(CurrentTime[0]!=g_oldTime[0])   //每秒钟计算一次SOC的值
-		{
-				g_oldTime[0] = CurrentTime[0];//秒
-			  SocIntegral();//计算积分得到的SOC值	   
-			  g_energyOfUsed = 0;	    		
-		    StoreSocRealvalue();//每秒保存SOC值
-		    //if(g_errorRecordRead_flag==0)
-		        //StoreSysVariable();//for test
-		         		    
-    } //end of 每秒钟
-				
-		if(CurrentTime[1]!=g_oldTime[1])// 每分钟SOC值赋给系统参数，作为保存或通信
-	  {
-			  g_oldTime[1] = CurrentTime[1];//分
-			  
-			  g_sysPara[PARA_SOC_VALUE] = g_socValue;
-			  
-			  if((g_BmsModeFlag == DISCHARGING)&&(StoreAHState==1))
-			  {
-			      ft=(StoreAHSOC-g_socValue)*C;//计算累积充放电AH容量
-			      if(ft>1)
-			      {			        
-			          dischargeAH += (unsigned int)ft;
-			          StoreAHSOC=First_g_socValue;
-			      }
-			  } 
-			  else if((g_BmsModeFlag == FASTRECHARGING)&&((StoreAHState==1)))
-			  {
-			      ft=(g_socValue-StoreAHSOC)*C;//计算累积充放电AH容量
-			      if(ft>1)
-			      {			        
-			          chargeAH += (unsigned int)ft;
-			          StoreAHSOC=First_g_socValue;
-			      }
-			  }
-			  
-			   
-			  //First_g_socValue=StoreAHSOC;      
-			    
-			   
-
-			  //保存状态数据
-			  if(g_errorRecordRead_flag==0)
-		        StoreSysVariable();//每分钟保存故障记录信息
-		    if(StoreAHState==1)    	
-		        StoreChargeDischargeAH();//保存累积充放电总容量	  
-		    //sendBMSIDtoBMU(); //发送BMS版本ID号给BMU
-			  //sendRealtimeToBMU(); //发送BMS系统时间给BMU
-			      
-    }
-
-}
 
 //***********************************************************************
 //* Function name:   TaskGpioTest

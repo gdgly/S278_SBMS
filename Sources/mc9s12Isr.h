@@ -65,6 +65,33 @@ typedef struct{
 }BMS_SBMS_CTRL_CMD;
 
 extern BMS_SBMS_CTRL_CMD g_bms_sbms_ctrl_cmd;
+
+
+typedef struct{
+    byte work_status    :4;//byte0
+    byte rsvd_0         :4;
+    
+    byte smoke_warning  :1;//byte1
+    byte fire_warning   :1;
+    byte rsvd_1         :6;
+    
+    byte OT_warning     :1;
+    byte T_jump_warning :1;
+    byte rsvd_2         :6;
+    
+    byte Temperature;
+    byte rsvd_4;
+    byte rsvd_5;
+    byte rsvd_6;
+    byte lifeCycle;
+}s_FireMsg;
+
+typedef union{
+    s_FireMsg bits;
+    byte data[8];
+}FireMsg;
+
+extern FireMsg g_FireMsg[10];
 //**************************************************************
 //*************************************************************
 //***************************************************************
