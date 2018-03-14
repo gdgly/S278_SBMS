@@ -88,7 +88,7 @@ void InitialBMS(void)
 {
     unsigned char SetTime[7];
 			
-	  TurnOff_ALL();// Turn off all relays. then check their state.
+	  //TurnOff_ALL();// Turn off all relays. then check their state.
 	  
 	  //TurnOn_CC2();//12V系统 屏蔽就是24V
 	  
